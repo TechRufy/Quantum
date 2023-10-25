@@ -1,7 +1,10 @@
+import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.datasets import load_iris, load_breast_cancer, load_wine, load_digits
 from sklearn.model_selection import train_test_split
 from qiskit_machine_learning.datasets import ad_hoc_data
+import pandas as pd
+import seaborn as sns
 
 datasets = {"digit": load_digits(n_class=2),
             "wine": load_wine(),
@@ -12,10 +15,9 @@ datasets = {"digit": load_digits(n_class=2),
 def caricaDataset(nome):
     if nome == "ad hoc":
         train_x, train_y, test_x, test_y = ad_hoc_data(training_size=20, test_size=5, n=2, gap=0.3,
-                                                       plot_data=False, one_hot=False,
+                                                       plot_data=True, one_hot=False,
                                                        include_sample_total=False)
-
-        return 3, train_x, train_y, test_x, test_y
+        return 2, train_x, train_y, test_x, test_y
     else:
         data = datasets[nome]
         X, Y = data.data, data.target
@@ -23,10 +25,18 @@ def caricaDataset(nome):
     from sklearn.preprocessing import StandardScaler, MinMaxScaler
     from sklearn.decomposition import PCA
 
-    n_dim = min(4, train_x.shape[1])
+    n_dim = min(2, train_x.shape[1])
     pca = PCA(n_components=n_dim).fit(train_x)
     sample_train = pca.transform(train_x)
     sample_test = pca.transform(test_x)
+
+    train = pd.DataFrame(sample_train)
+    label = pd.DataFrame(train_y)
+
+    train["labels"] = label
+    sns.FacetGrid(train, hue="labels").map(plt.scatter, 0, 1).add_legend()
+    plt.show()
+    n_dim = train_x.shape[1]
 
     # Normalise
     std_scale = StandardScaler().fit(sample_train)
